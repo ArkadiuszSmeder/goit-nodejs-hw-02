@@ -29,7 +29,6 @@ app.use((err, req, res, next) => {
 
 module.exports = app
 
-
 const startServer = async () => {
   try {
     await connection;

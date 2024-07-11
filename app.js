@@ -3,18 +3,21 @@ const logger = require('morgan');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const app = express();
+const contactsRouter = require('./routes/api/contacts');
 
 require('dotenv').config();
 
-const contactsRouter = require('./routes/api/contacts')
+const { DB_URL: urlDB } = process.env;
+
+const connection = mongoose.connect(urlDB);
 
 const formatsLogger = app.get('env') === 'development' ? 'dev' : 'short'
 
-app.use(logger(formatsLogger))
-app.use(cors())
-app.use(express.json())
+app.use(logger(formatsLogger));
+app.use(cors());
+app.use(express.json());
 
-app.use('/api/contacts', contactsRouter)
+app.use('/api/contacts', contactsRouter);
 
 app.use((req, res) => {
   res.status(404).json({ message: 'Not found' })
@@ -26,6 +29,18 @@ app.use((err, req, res, next) => {
 
 module.exports = app
 
-app.listen(3000, () => {
-  console.log('Server is running on port 3000');
-})
+
+const startServer = async () => {
+  try {
+    await connection;
+    console.log('Database connection successful');
+    app.listen(3000, () => {
+      console.log('Server is running on port 3000');
+    })
+  } catch (err) {
+    console.log(err);
+    process.exit(1);
+  }
+}
+
+startServer();

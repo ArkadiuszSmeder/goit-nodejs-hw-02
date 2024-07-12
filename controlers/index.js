@@ -51,7 +51,14 @@ const removeContact = async (req, res, next) => {
 };
 
 const updateContact = async (req, res, next) => {
-
+    const { contactId } = req.params;
+    
+    try {
+        const result = await modernizeContact({ id: contactId, toUpdate: req.body, upsert: true })
+        res.json(result)
+    } catch (err) {
+        next(err)
+    }
 };
 
 module.exports = {

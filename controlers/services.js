@@ -21,8 +21,12 @@ const deleteContact = (id) => {
     return Contact.deleteOne({ _id: id });
 };
 
-const modernizeContact = () => {
-
+const modernizeContact = ({ id, toUpdate, upsert }) => {
+    return Contact.findByIdAndUpdate(
+        { _id: id },
+        { $set: toUpdate },
+        { new: true, runValidators: true, strict: 'throw', upsert }
+    );
 };
 
 module.exports = {

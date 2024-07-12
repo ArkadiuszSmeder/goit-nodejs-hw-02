@@ -11,7 +11,17 @@ const listContacts = async (req, res, next) => {
 };
 
 const getContactById = async (req, res, next) => {
-
+    try {
+        const contactId = req.params.contactId
+        const contact = await fetchContact(contactId);
+        if (contact) {
+            res.json(contact);
+        } else {
+            next();
+        };
+    } catch (err) {
+        next(err)
+    };
 };
 
 const addContact = async (req, res, next) => {

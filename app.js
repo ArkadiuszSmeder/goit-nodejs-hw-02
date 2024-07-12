@@ -29,17 +29,17 @@ app.use((err, req, res, next) => {
 
 module.exports = app
 
-const startServer = async () => {
-  try {
-    await connection;
-    console.log('Database connection successful');
-    app.listen(3001, () => {
-      console.log('Server is running on port 3001');
-    })
-  } catch (err) {
-    console.log(err);
-    process.exit(1);
-  }
-}
+// const startServer = async () => {
+//   try {
+//     await connection;
+//     console.log('Database connection successful');
+//     app.listen(3001, () => {
+//       console.log('Server is running on port 3001');
+//     })
+//   } catch (err) {
+//     console.log(err);
+//     process.exit(1);
+//   }
+// }
 
-startServer();
+// startServer();

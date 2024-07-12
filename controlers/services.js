@@ -4,8 +4,8 @@ const fetchContacts = async () => {
     return await Contact.find();
 };
 
-const fetchContact = () => {
-
+const fetchContact = async (id) => {
+    return Contact.findById({ _id: id });
 };
 
 const insertContact = () => {

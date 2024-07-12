@@ -8,8 +8,13 @@ const fetchContact = async (id) => {
     return Contact.findById({ _id: id });
 };
 
-const insertContact = () => {
-
+const insertContact = ({ name, email, phone, favorite }) => {
+    return Contact.create({
+        name,
+        email,
+        phone,
+        favorite
+    })
 };
 
 const deleteContact = () => {

@@ -25,7 +25,18 @@ const getContactById = async (req, res, next) => {
 };
 
 const addContact = async (req, res, next) => {
-
+    const { name, email, phone, favorite } = req.body;
+    try {
+        const result = await insertContact({
+            name,
+            email,
+            phone,
+            favorite
+        })
+        res.status(201).json(result);
+    } catch (err) {
+        next(err)
+    }
 };
 
 const removeContact = async (req, res, next) => {

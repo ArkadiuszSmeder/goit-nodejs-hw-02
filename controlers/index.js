@@ -1,4 +1,12 @@
-const { fetchContacts, fetchContact, insertContact, deleteContact, modernizeContact } = require('./services.js')
+const { fetchContacts, fetchContact, insertContact, deleteContact, modernizeContact } = require('./services.js');
+const Joi = require('joi');
+
+const contactJoiSchema = Joi.object({
+    name: Joi.string().min(2).max(30).required(),
+    email: Joi.string().email().required(),
+    phone: Joi.string().pattern(/^[0-9\-+\s()]*$/).required(),
+    favorite: Joi.boolean().required()
+  })
 
 const listContacts = async (req, res, next) => {
     try {
@@ -26,17 +34,22 @@ const getContactById = async (req, res, next) => {
 
 const addContact = async (req, res, next) => {
     const { name, email, phone, favorite } = req.body;
-    try {
-        const result = await insertContact({
-            name,
-            email,
-            phone,
-            favorite
-        })
-        res.status(201).json(result);
-    } catch (err) {
-        next(err)
-    }
+    const validateResult = contactJoiSchema.validate(req.body);
+    if (validateResult.error) {
+        res.status(400).json({message: validateResult.error.message});
+    } else {
+        try {
+            const result = await insertContact({
+                name,
+                email,
+                phone,
+                favorite
+            })
+            res.status(201).json(result);
+        } catch (err) {
+            next(err)
+        }
+    };
 };
 
 const removeContact = async (req, res, next) => {
@@ -52,12 +65,16 @@ const removeContact = async (req, res, next) => {
 
 const updateContact = async (req, res, next) => {
     const { contactId } = req.params;
-    
-    try {
-        const result = await modernizeContact({ id: contactId, toUpdate: req.body, upsert: true })
-        res.json(result)
-    } catch (err) {
-        next(err)
+    const validateResult = contactJoiSchema.validate(req.body);
+    if (validateResult.error) {
+        res.status(400).json({message: validateResult.error.message});
+    } else {
+        try {
+            const result = await modernizeContact({ id: contactId, toUpdate: req.body, upsert: true })
+            res.json(result)
+        } catch (err) {
+            next(err)
+        }
     }
 };
 

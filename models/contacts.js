@@ -5,15 +5,13 @@ const contactSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Set name for contact'],
     minLength: 2,
-    maxLength: 25
+    maxLength: 30
   },
   email: {
-    type: String,
-    maxLength: 40
+    type: String
   },
   phone: {
-    type: String,
-    maxLength: 20
+    type: String
   },
   favorite: {
     type: Boolean,

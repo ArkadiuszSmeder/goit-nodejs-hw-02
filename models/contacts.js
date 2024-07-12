@@ -18,7 +18,10 @@ const contactSchema = new mongoose.Schema({
   favorite: {
     type: Boolean,
     default: false,
-  }
+},
+},
+  {
+    versionKey: false
 });
 
 const Contact = mongoose.model('contacts', contactSchema, 'contacts');

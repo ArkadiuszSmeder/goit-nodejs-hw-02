@@ -18,7 +18,7 @@ const insertContact = ({ name, email, phone, favorite }) => {
 };
 
 const deleteContact = () => {
-
+    return Contact.deleteOne({ _id: id });
 };
 
 const modernizeContact = () => {

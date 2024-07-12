@@ -40,7 +40,14 @@ const addContact = async (req, res, next) => {
 };
 
 const removeContact = async (req, res, next) => {
-    
+    const { contactId } = req.params;
+
+    try {
+        await deleteContact(contactId);
+        res.status(204).send({ message: `Task ${contactId} has been removed` })
+    } catch (err) {
+        next (err)
+    }
 };
 
 const updateContact = async (req, res, next) => {

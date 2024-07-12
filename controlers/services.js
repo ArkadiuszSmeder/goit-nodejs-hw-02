@@ -17,7 +17,7 @@ const insertContact = ({ name, email, phone, favorite }) => {
     })
 };
 
-const deleteContact = () => {
+const deleteContact = (id) => {
     return Contact.deleteOne({ _id: id });
 };
 

@@ -9,7 +9,7 @@ require('dotenv').config();
 
 const { DB_URL: urlDB } = process.env;
 
-const connection = mongoose.connect(urlDB);
+const connection = mongoose.connect(urlDB, {dbName: 'db-contacts'});
 
 const formatsLogger = app.get('env') === 'development' ? 'dev' : 'short'
 
@@ -33,8 +33,8 @@ const startServer = async () => {
   try {
     await connection;
     console.log('Database connection successful');
-    app.listen(3000, () => {
-      console.log('Server is running on port 3000');
+    app.listen(3001, () => {
+      console.log('Server is running on port 3001');
     })
   } catch (err) {
     console.log(err);

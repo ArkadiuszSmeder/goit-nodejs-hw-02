@@ -29,10 +29,19 @@ const modernizeContact = ({ id, toUpdate, upsert }) => {
     );
 };
 
+const modernizeStatusContact = ({ id, toUpdate }) => {
+    return Contact.findByIdAndUpdate(
+        { _id: id },
+        { $set: toUpdate },
+        { new: true, runValidators: true, strict: 'throw' }
+    );
+};
+
 module.exports = {
     fetchContacts,
     fetchContact,
     insertContact,
     deleteContact,
-    modernizeContact
+    modernizeContact,
+    modernizeStatusContact
 };

@@ -1,4 +1,4 @@
-const { fetchContacts, fetchContact, insertContact, deleteContact, modernizeContact } = require('./services.js');
+const { fetchContacts, fetchContact, insertContact, deleteContact, modernizeContact, modernizeStatusContact } = require('./services.js');
 const Joi = require('joi');
 
 const contactJoiSchema = Joi.object({
@@ -36,7 +36,7 @@ const addContact = async (req, res, next) => {
     const { name, email, phone, favorite } = req.body;
     const validateResult = contactJoiSchema.validate(req.body);
     if (validateResult.error) {
-        res.status(400).json({message: validateResult.error.message});
+       return res.status(400).json({message: validateResult.error.message});
     } else {
         try {
             const result = await insertContact({
@@ -67,11 +67,30 @@ const updateContact = async (req, res, next) => {
     const { contactId } = req.params;
     const validateResult = contactJoiSchema.validate(req.body);
     if (validateResult.error) {
-        res.status(400).json({message: validateResult.error.message});
+       return res.status(400).json({message: validateResult.error.message});
     } else {
         try {
             const result = await modernizeContact({ id: contactId, toUpdate: req.body, upsert: true })
             res.json(result)
+        } catch (err) {
+            next(err)
+        }
+    }
+};
+
+const updateStatusContact = async (req, res, next) => {
+    const { contactId } = req.params;
+    const validateResult = contactJoiSchema.validate(req.body);
+    if (validateResult.error) {
+       return res.status(400).json({message: validateResult.error.message});
+    } else {
+        try {
+            const result = await modernizeStatusContact({ id: contactId, toUpdate: req.body });
+            if (result) {
+                res.status(200).json(result)
+            } else {
+                res.status(404).json({ message: 'Not found' })
+            }
         } catch (err) {
             next(err)
         }
@@ -83,5 +102,6 @@ module.exports = {
     getContactById,
     addContact,
     removeContact,
-    updateContact
+    updateContact,
+    updateStatusContact
 };

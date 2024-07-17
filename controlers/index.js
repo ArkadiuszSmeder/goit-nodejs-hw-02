@@ -6,7 +6,7 @@ const contactJoiSchema = Joi.object({
     email: Joi.string().email().required(),
     phone: Joi.string().pattern(/^[0-9\-+\s()]*$/).required(),
     favorite: Joi.boolean().required()
-  })
+})
 
 const listContacts = async (req, res, next) => {
     try {

@@ -8,8 +8,24 @@ const userJoiSchema = Joi.object({
     token: Joi.string().allow(null)
 })
 
-const createUser = (req, res, next) => {
-
+const createUser = async (req, res, next) => {
+    const { email, password } = req.body;
+    const user = await User.findOne({email}).lean();
+    const validateResult = userJoiSchema.validate(req.body);
+    if (validateResult.error) {
+        return res.status(400).json({message: 'Błąd z Joi lub innej biblioteki walidacji'})
+    }
+    if (user) {
+        return res.status(409).json({message: 'Email in use'});
+    }
+    try {
+        const newUser = new User({email, password});
+        await newUser.setPassword(password);
+        await newUser.save();
+        return res.status(201).json({message: `User ${req.body.email} created. Subscription: starter`});
+    } catch (err) {
+        next(err)
+    }
 };
 
 const loginUser = (req, res) => {

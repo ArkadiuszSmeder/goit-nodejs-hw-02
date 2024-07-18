@@ -25,6 +25,10 @@ const userSchema = new Schema({
 
 userSchema.methods.setPassword = async function(password) {
   this.password = await bCrypt.hash(password, 10);
+};
+
+userSchema.methods.validatePassword = async function(password) {
+  return await bCrypt.compare(password, this.password);
 }
 
 const User = mongoose.model('user', userSchema, 'users');

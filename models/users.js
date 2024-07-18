@@ -1,4 +1,6 @@
-import mongoose, {Schema} from 'mongoose';
+const mongoose = require('mongoose');
+const { Schema } = mongoose;
+const bCrypt = require("bcrypt");
 
 const userSchema = new Schema({
     password: {
@@ -19,8 +21,12 @@ const userSchema = new Schema({
       type: String,
       default: null,
     },
-  })
+  });
 
-  const User = mongoose.model('user', userSchema, 'users');
+userSchema.methods.setPassword = async function(password) {
+  this.password = await bCrypt.hash(password, 10);
+}
 
-  module.exports = User;
+const User = mongoose.model('user', userSchema, 'users');
+
+module.exports = User;

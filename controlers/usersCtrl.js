@@ -1,5 +1,6 @@
 const User = require('../models/users.js');
 const Joi = require('joi');
+const jwt = require('jsonwebtoken');
 
 const userJoiSchema = Joi.object({
     password: Joi.string().min(8).max(20).required(),
@@ -30,7 +31,7 @@ const createUser = async (req, res, next) => {
 
 const loginUser = async (req, res) => {
     const { email, password } = req.body;
-    const user = await User.findOne({email}).lean();
+    const user = await User.findOne({email});
     const validateResult = userJoiSchema.validate(req.body);
     if (validateResult.error) {
         return res.status(400).json({message: 'Błąd z Joi lub innej biblioteki walidacji'});

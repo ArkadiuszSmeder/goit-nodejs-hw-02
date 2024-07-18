@@ -28,8 +28,32 @@ const createUser = async (req, res, next) => {
     }
 };
 
-const loginUser = (req, res) => {
+const loginUser = async (req, res) => {
+    const { email, password } = req.body;
+    const user = await User.findOne({email}).lean();
+    const validateResult = userJoiSchema.validate(req.body);
+    if (validateResult.error) {
+        return res.status(400).json({message: 'Błąd z Joi lub innej biblioteki walidacji'});
+    }
+    if (!user) {
+        return res.status(401).json({message: 'Wrong email'});
+    }
 
+    const isPasswordCorrect = await user.validatePassword(password);
+    if (isPasswordCorrect) {
+        const payload = {
+            id: user._id,
+            email: user.email
+        };
+        const token = jwt.sign(
+            payload,
+            process.env.SECRET,
+            {expiresIn: '8h'}
+        )
+        return res.json({token});
+    } else {
+        return res.status(401).json({message: 'Wrong password'});
+    }
 };
 
 module.exports = {

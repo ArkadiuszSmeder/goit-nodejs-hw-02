@@ -49,7 +49,7 @@ const loginUser = async (req, res) => {
         const token = jwt.sign(
             payload,
             process.env.SECRET,
-            {expiresIn: '8h'}
+            {expiresIn: '30s'}
         )
         return res.json({token});
     } else {

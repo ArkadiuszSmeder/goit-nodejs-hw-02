@@ -49,15 +49,35 @@ const loginUser = async (req, res) => {
         const token = jwt.sign(
             payload,
             process.env.SECRET,
-            {expiresIn: '30s'}
+            {expiresIn: '60s'}
         )
+        await user.save();
         return res.json({token});
     } else {
         return res.status(401).json({message: 'Wrong password'});
     }
 };
 
+const logoutUser = async (req, res, next) => {
+    const userId = req.user._id;
+    try {
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(401).json({ message: 'Not authorized' });
+        }
+        user.token = null;
+        await user.save();
+        return res.status(204).json({message: 'User logout'});
+    } catch (err) {
+        next(err)
+    }
+};
+
+
+
 module.exports = {
     createUser,
-    loginUser
+    loginUser,
+    logoutUser,
+    getCurrentUser
 };

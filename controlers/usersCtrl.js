@@ -73,7 +73,21 @@ const logoutUser = async (req, res, next) => {
     }
 };
 
-
+const getCurrentUser = async (req, res, next) => {
+    const userId = req.user_id;
+    try {
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(401).json({message: 'Not authorized'})
+        }
+        return res.status(200).json({
+            email: user.email,
+            subscription: user.subscription
+        })
+    }catch (err) {
+        next(err)
+    }
+};
 
 module.exports = {
     createUser,

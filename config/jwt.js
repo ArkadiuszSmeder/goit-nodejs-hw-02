@@ -2,7 +2,7 @@ const passport = require('passport');
 const { ExtractJwt, Strategy: JWTStrategy } = require('passport-jwt');
 const User = require('../models/users.js');
 
-export default function setJWTStrategy() {
+function setJWTStrategy() {
     const secret = process.env.SECRET;
 
     const params = {
@@ -28,3 +28,5 @@ export default function setJWTStrategy() {
         )
     )
 }
+
+module.exports = setJWTStrategy;

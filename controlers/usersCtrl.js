@@ -74,7 +74,7 @@ const logoutUser = async (req, res, next) => {
 };
 
 const getCurrentUser = async (req, res, next) => {
-    const userId = req.user_id;
+    const userId = req.user._id;
     try {
         const user = await User.findById(userId);
         if (!user) {

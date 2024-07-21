@@ -1,37 +1,38 @@
 const Contact = require('../models/contacts.js');
 
-const fetchContacts = async () => {
-    return await Contact.find();
+const fetchContacts = async (owner) => {
+    return await Contact.find({ owner });
 };
 
-const fetchContact = async (id) => {
-    return Contact.findById({ _id: id });
+const fetchContact = async (id, owner) => {
+    return Contact.findById({ _id: id, owner });
 };
 
-const insertContact = ({ name, email, phone, favorite }) => {
+const insertContact = ({ name, email, phone, favorite, owner }) => {
     return Contact.create({
         name,
         email,
         phone,
-        favorite
+        favorite,
+        owner
     })
 };
 
-const deleteContact = (id) => {
-    return Contact.deleteOne({ _id: id });
+const deleteContact = (id, owner) => {
+    return Contact.deleteOne({ _id: id, owner });
 };
 
-const modernizeContact = ({ id, toUpdate, upsert }) => {
+const modernizeContact = ({ id, owner, toUpdate, upsert }) => {
     return Contact.findByIdAndUpdate(
-        { _id: id },
+        { _id: id, owner },
         { $set: toUpdate },
         { new: true, runValidators: true, strict: 'throw', upsert }
     );
 };
 
-const modernizeStatusContact = ({ id, toUpdate }) => {
+const modernizeStatusContact = ({ id, owner, toUpdate }) => {
     return Contact.findByIdAndUpdate(
-        { _id: id },
+        { _id: id, owner },
         { $set: toUpdate },
         { new: true, runValidators: true, strict: 'throw' }
     );

@@ -5,17 +5,16 @@ const jwt = require('jsonwebtoken');
 const userJoiSchema = Joi.object({
     password: Joi.string().min(8).max(20).required(),
     email: Joi.string().email().required(),
-    subscription: Joi.string().valid('starter', 'pro', 'business').default('starter'),
-    token: Joi.string().allow(null)
+    subscription: Joi.string().valid('starter', 'pro', 'business').default('starter')
 })
 
 const createUser = async (req, res, next) => {
-    const { email, password } = req.body;
-    const user = await User.findOne({email}).lean();
     const validateResult = userJoiSchema.validate(req.body);
     if (validateResult.error) {
         return res.status(400).json({message: 'Błąd z Joi lub innej biblioteki walidacji'})
     }
+    const { email, password } = req.body;
+    const user = await User.findOne({email}).lean();
     if (user) {
         return res.status(409).json({message: 'Email in use'});
     }
@@ -30,12 +29,12 @@ const createUser = async (req, res, next) => {
 };
 
 const loginUser = async (req, res) => {
-    const { email, password } = req.body;
-    const user = await User.findOne({email});
     const validateResult = userJoiSchema.validate(req.body);
     if (validateResult.error) {
         return res.status(400).json({message: 'Błąd z Joi lub innej biblioteki walidacji'});
     }
+    const { email, password } = req.body;
+    const user = await User.findOne({email});
     if (!user) {
         return res.status(401).json({message: 'Wrong email'});
     }
@@ -49,7 +48,7 @@ const loginUser = async (req, res) => {
         const token = jwt.sign(
             payload,
             process.env.SECRET,
-            {expiresIn: '60s'}
+            {expiresIn: '12h'}
         )
         await user.save();
         return res.json({token});
@@ -62,9 +61,6 @@ const logoutUser = async (req, res, next) => {
     const userId = req.user._id;
     try {
         const user = await User.findById(userId);
-        if (!user) {
-            return res.status(401).json({ message: 'Not authorized' });
-        }
         user.token = null;
         await user.save();
         return res.status(204).json({message: 'User logout'});
@@ -77,9 +73,6 @@ const getCurrentUser = async (req, res, next) => {
     const userId = req.user._id;
     try {
         const user = await User.findById(userId);
-        if (!user) {
-            return res.status(401).json({message: 'Not authorized'})
-        }
         return res.status(200).json({
             email: user.email,
             subscription: user.subscription

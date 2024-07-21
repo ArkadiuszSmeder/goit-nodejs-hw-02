@@ -6,7 +6,7 @@ const contactJoiSchema = Joi.object({
     email: Joi.string().email().required(),
     phone: Joi.string().pattern(/^[0-9\-+\s()]*$/).required(),
     favorite: Joi.boolean().required(),
-    owner: Joi.string().required()
+    owner: Joi.string()
 })
 
 const listContacts = async (req, res, next) => {
@@ -36,7 +36,8 @@ const getContactById = async (req, res, next) => {
 };
 
 const addContact = async (req, res, next) => {
-    const { name, email, phone, favorite, owner } = req.body;
+    const owner = req.user._id;
+    const { name, email, phone, favorite } = req.body;
     const validateResult = contactJoiSchema.validate(req.body);
     if (validateResult.error) {
        return res.status(400).json({message: validateResult.error.message});

@@ -1,4 +1,5 @@
 const multer = require('multer');
+const storage = require('../config/multer');
 
 const extensionWhiteList = [".jpg", ".jpeg", ".png", ".gif"];
 const mimetypeWhiteList = ["image/png", "image/jpg", "image/jpeg", "image/gif"];

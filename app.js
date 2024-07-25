@@ -14,17 +14,7 @@ const app = express();
 app.set("view engine", "ejs");
 app.use(express.static(path.resolve(__dirname, "./public")));
 
-const tempDir = path.join(process.cwd(), "tmp");
 const storeImageDir = path.join(process.cwd(), "public/avatars");
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => { 
-      cb(null, tempDir);
-  },
-  filename: (req, file, cb) => {
-      cb(null, `${uuidV4()}${file.originalname}`);
-  },
-});
 
 const { DB_URL: urlDB } = process.env;
 

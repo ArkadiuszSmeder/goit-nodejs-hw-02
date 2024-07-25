@@ -12,6 +12,6 @@ router.get('/logout', authMiddleware, logoutUser);
 
 router.get('/current', authMiddleware, getCurrentUser)
 
-router.patch('/avatars', authMiddleware, updateAvatar);
+router.patch('/avatars', authMiddleware, uploadMiddleware.single('avatar'), updateAvatar);
 
 module.exports = router;

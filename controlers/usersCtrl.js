@@ -96,7 +96,8 @@ const getCurrentUser = async (req, res, next) => {
         const user = await User.findById(userId);
         return res.status(200).json({
             email: user.email,
-            subscription: user.subscription
+            subscription: user.subscription,
+            avatar: user.avatarURL
         })
     }catch (err) {
         next(err)

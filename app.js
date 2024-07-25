@@ -12,8 +12,11 @@ require('dotenv').config();
 const app = express();
 
 app.set("view engine", "ejs");
-
 app.use(express.static(path.resolve(__dirname, "./public")));
+
+const tempDir = path.join(process.cwd(), "tmp");
+const storeImageDir = path.join(process.cwd(), "public/avatars");
+
 
 const { DB_URL: urlDB } = process.env;
 

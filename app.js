@@ -2,7 +2,8 @@ const express = require('express');
 const logger = require('morgan');
 const cors = require('cors');
 const mongoose = require('mongoose');
-const contactsRouter = require('./routes/api/contacts');
+const apiRouter = require('./routes/api/api.js');
+const JWTStrategy = require('./config/jwt.js');
 require('dotenv').config();
 
 const app = express();
@@ -20,14 +21,15 @@ const connection = async () => {
 
 connection();
 
-
 const formatsLogger = app.get('env') === 'development' ? 'dev' : 'short'
 
 app.use(logger(formatsLogger));
 app.use(cors());
 app.use(express.json());
 
-app.use('/api/contacts', contactsRouter);
+JWTStrategy();
+
+app.use('/api', apiRouter);
 
 app.use((req, res) => {
   res.status(404).json({ message: 'Not found' })

@@ -1,6 +1,7 @@
 const User = require('../models/users.js');
 const Joi = require('joi');
 const jwt = require('jsonwebtoken');
+const gravatar = require('gravatar');
 
 const userJoiSchema = Joi.object({
     password: Joi.string().min(8).max(20).required(),
@@ -19,7 +20,8 @@ const createUser = async (req, res, next) => {
         return res.status(409).json({message: 'Email in use'});
     }
     try {
-        const newUser = new User({email, password});
+        const avatarURL = gravatar.url(email, { s: '200', r: 'pg', d: 'mm' });
+        const newUser = new User({email, password, avatarURL});
         await newUser.setPassword(password);
         await newUser.save();
         return res.status(201).json({message: `User ${req.body.email} created. Subscription: starter`});

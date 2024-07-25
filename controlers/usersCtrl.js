@@ -3,6 +3,8 @@ const Joi = require('joi');
 const jwt = require('jsonwebtoken');
 const gravatar = require('gravatar');
 
+const isImageAndTransform = require('../config/avatarSet.js');
+
 const userJoiSchema = Joi.object({
     password: Joi.string().min(8).max(20).required(),
     email: Joi.string().email().required(),
@@ -60,7 +62,34 @@ const loginUser = async (req, res) => {
 };
 
 const updateAvatar = async (req, res, next) => {
+    if (!req.file) {
+        return res.status(400).json({message: 'File is not a photo'})
+    }
 
+    const userId = req.user._id;
+    const { avatarURL } = req.file;
+    const storeImageDir = path.join(process.cwd(), "public/avatars");
+
+    const {path: temporaryPath} = req.file;
+    const extension = path.extname(temporaryPath);
+    const fileName = `${uuidV4()}${extension}`;
+    const filePath = path.join(storeImageDir, fileName);
+
+    try {
+        await fs.rename(temporaryPath, filePath)
+    } catch (err) {
+        await fs.unlink(temporaryPath)
+        return next(err)
+    }
+
+    const isValidAndTransform = await isImageAndTransform(filePath);
+    if (!isValidAndTransform) {
+        await fs.unlink(filePath);
+        return res
+            .status(400)
+            .json({ message: "File isn't a photo but is pretending" });
+    }
+   
 
 };
 

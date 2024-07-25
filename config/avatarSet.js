@@ -20,6 +20,4 @@ const isImageAndTransform = async (path) =>
         })
     })
 
-module.exports = {
-    isImageAndTransform
-}
+module.exports = isImageAndTransform;

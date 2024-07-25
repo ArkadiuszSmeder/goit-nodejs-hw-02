@@ -65,11 +65,12 @@ const loginUser = async (req, res) => {
 };
 
 const updateAvatar = async (req, res, next) => {
-    const userId = req.user._id;
-    // const { avatarURL } = req.file;
-    const storeImageDir = path.join(process.cwd(), "public/avatars");
 
-    console.log(req.file)
+    if (!req.file) {
+        return res.status(400).json({message: 'File is not a photo'})
+    }
+    const userId = req.user._id;
+    const storeImageDir = path.join(process.cwd(), "public/avatars");
 
     const {path: temporaryPath} = req.file;
     const extension = path.extname(temporaryPath);
@@ -77,10 +78,6 @@ const updateAvatar = async (req, res, next) => {
     const filePath = path.join(storeImageDir, fileName);
     console.log(filePath)
     console.log(fileName)
-
-    if (!req.file) {
-        return res.status(400).json({message: 'File is not a photo'})
-    }
 
     try {
         await fs.rename(temporaryPath, filePath)
@@ -92,12 +89,18 @@ const updateAvatar = async (req, res, next) => {
     const isValidAndTransform = await isImageAndTransform(fileName);
     if (!isValidAndTransform) {
         await fs.unlink(filePath);
-        return res
-            .status(400)
-            .json({ message: "File isn't a photo but is pretending" });
+        return res.status(400).json({ message: "File isn't a photo but is pretending" });
     }
-    
 
+    try {
+        const user = await User.findById(userId);
+        user.avatarURL = `${req.protocol}://${req.get('host')}/avatars/${fileName}`;
+        await user.save();
+        return res.status(200).json({ avatarURL: user.avatarURL });
+    } catch (err) {
+        await fs.unlink(filePath);
+        next(err)
+    }
 };
 
 const logoutUser = async (req, res, next) => {

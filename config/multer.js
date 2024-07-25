@@ -16,7 +16,8 @@ const storage = multer.diskStorage({
     },
   });
 
-  const multerMiddleware = multer({storage,
+  const multerMiddleware = multer({
+    storage,
     fileFilter: async (req, file, cb) => {
         const extension = path.extname(file.originalname).toLowerCase();
         const mimetype = file.mimetype;
@@ -29,7 +30,5 @@ const storage = multer.diskStorage({
         fileSize: 1024 * 1024 * 5
     },
   })
-
-
 
 module.exports = multerMiddleware

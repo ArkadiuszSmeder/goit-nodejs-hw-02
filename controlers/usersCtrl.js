@@ -2,6 +2,9 @@ const User = require('../models/users.js');
 const Joi = require('joi');
 const jwt = require('jsonwebtoken');
 const gravatar = require('gravatar');
+const path = require("path");
+const { v4: uuidV4 } = require('uuid');
+const fs = require("fs").promises;
 
 const isImageAndTransform = require('../config/avatarSet.js');
 
@@ -62,18 +65,22 @@ const loginUser = async (req, res) => {
 };
 
 const updateAvatar = async (req, res, next) => {
-    if (!req.file) {
-        return res.status(400).json({message: 'File is not a photo'})
-    }
-
     const userId = req.user._id;
-    const { avatarURL } = req.file;
+    // const { avatarURL } = req.file;
     const storeImageDir = path.join(process.cwd(), "public/avatars");
+
+    console.log(req.file)
 
     const {path: temporaryPath} = req.file;
     const extension = path.extname(temporaryPath);
     const fileName = `${uuidV4()}${extension}`;
     const filePath = path.join(storeImageDir, fileName);
+    console.log(filePath)
+    console.log(fileName)
+
+    if (!req.file) {
+        return res.status(400).json({message: 'File is not a photo'})
+    }
 
     try {
         await fs.rename(temporaryPath, filePath)
@@ -82,14 +89,14 @@ const updateAvatar = async (req, res, next) => {
         return next(err)
     }
 
-    const isValidAndTransform = await isImageAndTransform(filePath);
+    const isValidAndTransform = await isImageAndTransform(fileName);
     if (!isValidAndTransform) {
         await fs.unlink(filePath);
         return res
             .status(400)
             .json({ message: "File isn't a photo but is pretending" });
     }
-   
+    
 
 };
 

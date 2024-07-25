@@ -14,8 +14,6 @@ const app = express();
 app.set("view engine", "ejs");
 app.use(express.static(path.resolve(__dirname, "./public")));
 
-const storeImageDir = path.join(process.cwd(), "public/avatars");
-
 const { DB_URL: urlDB } = process.env;
 
 const connection = async () => {

@@ -4,11 +4,16 @@ const MAX_AVATAR_SIZE = 250;
 
 const isImageAndTransform = async (path) =>
     new Promise((resolve) => {
+        console.log('path to file', path)
         Jimp.read(path, async (err, image) => {
-            if (err) resolve(false)
+            if (err) {
+                console.log(err)
+                resolve(false)
+                return
+            }
             
             try {
-                await image
+                image
                     .rotate(360)
                     .resize(MAX_AVATAR_SIZE, MAX_AVATAR_SIZE)
                     .write(path)

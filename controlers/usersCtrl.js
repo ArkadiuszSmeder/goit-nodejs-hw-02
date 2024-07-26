@@ -76,8 +76,6 @@ const updateAvatar = async (req, res, next) => {
     const extension = path.extname(temporaryPath);
     const fileName = `${uuidV4()}${extension}`;
     const filePath = path.join(storeImageDir, fileName);
-    console.log(filePath)
-    console.log(fileName)
 
     try {
         await fs.rename(temporaryPath, filePath)
@@ -86,7 +84,7 @@ const updateAvatar = async (req, res, next) => {
         return next(err)
     }
 
-    const isValidAndTransform = await isImageAndTransform(fileName);
+    const isValidAndTransform = await isImageAndTransform(filePath);
     if (!isValidAndTransform) {
         await fs.unlink(filePath);
         return res.status(400).json({ message: "File isn't a photo but is pretending" });

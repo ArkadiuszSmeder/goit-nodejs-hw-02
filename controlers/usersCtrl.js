@@ -6,6 +6,7 @@ const path = require("path");
 const { v4: uuidV4 } = require('uuid');
 const fs = require("fs").promises;
 const nodemailer = require('nodemailer');
+require('dotenv').config();
 
 const isImageAndTransform = require('../config/avatarSet.js');
 
@@ -43,7 +44,7 @@ const createUser = async (req, res, next) => {
               pass: M_PASS
             },
           });
-    
+
         const mailOptions = {
             from: '"Company Team" <mycompany123@gmail.com>',
             to: email,
@@ -61,7 +62,7 @@ const createUser = async (req, res, next) => {
             }
         });
 
-        return res.status(201).json({message: `User ${req.body.email} created. Subscription: starter`});
+        return res.status(201).json({message: `User ${req.body.email} created. Subscription: starter. Please verify your account via email.`});
     } catch (err) {
         next(err)
     }

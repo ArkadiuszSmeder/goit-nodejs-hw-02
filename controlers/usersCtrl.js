@@ -13,7 +13,9 @@ const userJoiSchema = Joi.object({
     password: Joi.string().min(8).max(20).required(),
     email: Joi.string().email().required(),
     subscription: Joi.string().valid('starter', 'pro', 'business').default('starter')
-})
+});
+
+const {M_USER, M_PASS} = process.env;
 
 const createUser = async (req, res, next) => {
     const validateResult = userJoiSchema.validate(req.body);
@@ -31,9 +33,33 @@ const createUser = async (req, res, next) => {
         const newUser = new User({email, password, avatarURL, verificationToken});
         await newUser.setPassword(password);
         await newUser.save();
-        // possible place to send mail with ver link?????
 
-
+        const transporter = nodemailer.createTransport({
+            host: "smtp.mailgun.org",
+            port: 587,
+            secure: false,
+            auth: {
+              user: M_USER,
+              pass: M_PASS
+            },
+          });
+    
+        const mailOptions = {
+            from: '"Company Team" <mycompany123@gmail.com>',
+            to: email,
+            subject: 'Welcome to my app. Please verify your account.',
+            html: `<h1>Verification link<h1><a href="http://localhost:3000/api/users/verify/${verificationToken}">Welcome on my website</a>`
+        };
+    
+        transporter.sendMail(mailOptions, (err, info) => {
+            if(err) {
+                console.log(err)
+                res.status(500).send('Error message')
+            } else {
+                console.log("Message sent: %s", info.messageId);
+                res.send('Email sent successfully');
+            }
+        });
 
         return res.status(201).json({message: `User ${req.body.email} created. Subscription: starter`});
     } catch (err) {

@@ -31,6 +31,9 @@ const createUser = async (req, res, next) => {
         await newUser.setPassword(password);
         await newUser.save();
         // possible place to send mail with ver link?????
+
+        
+
         return res.status(201).json({message: `User ${req.body.email} created. Subscription: starter`});
     } catch (err) {
         next(err)

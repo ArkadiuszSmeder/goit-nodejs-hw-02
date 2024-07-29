@@ -49,7 +49,7 @@ const createUser = async (req, res, next) => {
             from: '"Company Team" <mycompany123@gmail.com>',
             to: email,
             subject: 'Welcome to my app. Please verify your account.',
-            html: `<h1>Verification link<h1><a href="http://localhost:3000/api/users/verify/${verificationToken}">Welcome on my website</a>`
+            html: `<h1>Welcome on my website<h1><a href="http://localhost:3000/api/users/verify/${verificationToken}">Verification link</a>`
         };
     
         transporter.sendMail(mailOptions, (err, info) => {
@@ -166,15 +166,17 @@ const getCurrentUser = async (req, res, next) => {
 
 const verifyUser = async (req, res, next) => {
     const {verificationToken} = req.params;
+    console.log(verificationToken)
     try {
         const user = await User.findOne({verificationToken})
+        console.log(user)
         if(!user) {
             return res.status(404).json({message: 'User not found'});
         }
         user.verificationToken = null;
         user.verify = true;
         await user.save();
-        return res.ststus(200).json({message: 'Verification successful'})
+        return res.status(200).json({message: 'Verification successful'})
     } catch (err) {
         next(err)
     }

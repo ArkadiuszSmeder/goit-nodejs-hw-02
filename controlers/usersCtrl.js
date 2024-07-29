@@ -26,9 +26,11 @@ const createUser = async (req, res, next) => {
     }
     try {
         const avatarURL = gravatar.url(email, { s: '200', r: 'pg', d: 'mm' });
-        const newUser = new User({email, password, avatarURL});
+        const verificationToken = uuidV4();
+        const newUser = new User({email, password, avatarURL, verificationToken});
         await newUser.setPassword(password);
         await newUser.save();
+        // possible place to send mail with ver link?????
         return res.status(201).json({message: `User ${req.body.email} created. Subscription: starter`});
     } catch (err) {
         next(err)
@@ -122,7 +124,23 @@ const getCurrentUser = async (req, res, next) => {
             subscription: user.subscription,
             avatar: user.avatarURL
         })
-    }catch (err) {
+    } catch (err) {
+        next(err)
+    }
+};
+
+const verifyUser = async (req, res, next) => {
+    const {verificationToken} = req.params;
+    try {
+        const user = await User.findOne({verificationToken})
+        if(!user) {
+            return res.status(404).json({message: 'User not found'});
+        }
+        user.verificationToken = null;
+        user.verify = true;
+        await user.save();
+        return res.ststus(200).json({message: 'Verification successful'})
+    } catch (err) {
         next(err)
     }
 };
@@ -132,5 +150,6 @@ module.exports = {
     loginUser,
     logoutUser,
     getCurrentUser,
-    updateAvatar
+    updateAvatar,
+    verifyUser
 };

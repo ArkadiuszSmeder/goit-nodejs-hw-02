@@ -1,6 +1,12 @@
 const User = require('../models/users.js');
 const Joi = require('joi');
 const jwt = require('jsonwebtoken');
+const gravatar = require('gravatar');
+const path = require("path");
+const { v4: uuidV4 } = require('uuid');
+const fs = require("fs").promises;
+
+const isImageAndTransform = require('../config/avatarSet.js');
 
 const userJoiSchema = Joi.object({
     password: Joi.string().min(8).max(20).required(),
@@ -19,7 +25,8 @@ const createUser = async (req, res, next) => {
         return res.status(409).json({message: 'Email in use'});
     }
     try {
-        const newUser = new User({email, password});
+        const avatarURL = gravatar.url(email, { s: '200', r: 'pg', d: 'mm' });
+        const newUser = new User({email, password, avatarURL});
         await newUser.setPassword(password);
         await newUser.save();
         return res.status(201).json({message: `User ${req.body.email} created. Subscription: starter`});
@@ -57,6 +64,43 @@ const loginUser = async (req, res) => {
     }
 };
 
+const updateAvatar = async (req, res, next) => {
+
+    if (!req.file) {
+        return res.status(400).json({message: 'File is not a photo'})
+    }
+    const userId = req.user._id;
+    const storeImageDir = path.join(process.cwd(), "public/avatars");
+
+    const {path: temporaryPath} = req.file;
+    const extension = path.extname(temporaryPath);
+    const fileName = `${uuidV4()}${extension}`;
+    const filePath = path.join(storeImageDir, fileName);
+
+    try {
+        await fs.rename(temporaryPath, filePath)
+    } catch (err) {
+        await fs.unlink(temporaryPath)
+        return next(err)
+    }
+
+    const isValidAndTransform = await isImageAndTransform(filePath);
+    if (!isValidAndTransform) {
+        await fs.unlink(filePath);
+        return res.status(400).json({ message: "File isn't a photo but is pretending" });
+    }
+
+    try {
+        const user = await User.findById(userId);
+        user.avatarURL = `${req.protocol}://${req.get('host')}/avatars/${fileName}`;
+        await user.save();
+        return res.status(200).json({ avatarURL: user.avatarURL });
+    } catch (err) {
+        await fs.unlink(filePath);
+        next(err)
+    }
+};
+
 const logoutUser = async (req, res, next) => {
     const userId = req.user._id;
     try {
@@ -75,7 +119,8 @@ const getCurrentUser = async (req, res, next) => {
         const user = await User.findById(userId);
         return res.status(200).json({
             email: user.email,
-            subscription: user.subscription
+            subscription: user.subscription,
+            avatar: user.avatarURL
         })
     }catch (err) {
         next(err)
@@ -86,5 +131,6 @@ module.exports = {
     createUser,
     loginUser,
     logoutUser,
-    getCurrentUser
+    getCurrentUser,
+    updateAvatar
 };

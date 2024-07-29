@@ -2,11 +2,18 @@ const express = require('express');
 const logger = require('morgan');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const multer = require('multer');
+const path = require("path");
+const { v4: uuidV4 } = require('uuid');
 const apiRouter = require('./routes/api/api.js');
 const JWTStrategy = require('./config/jwt.js');
 require('dotenv').config();
 
 const app = express();
+
+app.set("view engine", "ejs");
+app.use(express.static(path.resolve(__dirname, "./public")));
+
 const { DB_URL: urlDB } = process.env;
 
 const connection = async () => {

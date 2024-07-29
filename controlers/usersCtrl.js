@@ -78,6 +78,10 @@ const loginUser = async (req, res) => {
         return res.status(401).json({message: 'Wrong email'});
     }
 
+    if (!user.verify) {
+        return res.status(403).json({message: 'Email not verified'});
+    }
+
     const isPasswordCorrect = await user.validatePassword(password);
     if (isPasswordCorrect) {
         const payload = {

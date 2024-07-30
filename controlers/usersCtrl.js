@@ -5,6 +5,8 @@ const gravatar = require('gravatar');
 const path = require("path");
 const { v4: uuidV4 } = require('uuid');
 const fs = require("fs").promises;
+const nodemailer = require('nodemailer');
+require('dotenv').config();
 
 const isImageAndTransform = require('../config/avatarSet.js');
 
@@ -12,7 +14,9 @@ const userJoiSchema = Joi.object({
     password: Joi.string().min(8).max(20).required(),
     email: Joi.string().email().required(),
     subscription: Joi.string().valid('starter', 'pro', 'business').default('starter')
-})
+});
+
+const {M_USER, M_PASS} = process.env;
 
 const createUser = async (req, res, next) => {
     const validateResult = userJoiSchema.validate(req.body);
@@ -26,10 +30,39 @@ const createUser = async (req, res, next) => {
     }
     try {
         const avatarURL = gravatar.url(email, { s: '200', r: 'pg', d: 'mm' });
-        const newUser = new User({email, password, avatarURL});
+        const verificationToken = uuidV4();
+        const newUser = new User({email, password, avatarURL, verificationToken});
         await newUser.setPassword(password);
         await newUser.save();
-        return res.status(201).json({message: `User ${req.body.email} created. Subscription: starter`});
+
+        const transporter = nodemailer.createTransport({
+            host: "smtp.mailgun.org",
+            port: 587,
+            secure: false,
+            auth: {
+              user: M_USER,
+              pass: M_PASS
+            },
+          });
+
+        const mailOptions = {
+            from: '"Company Team" <mycompany123@gmail.com>',
+            to: email,
+            subject: 'Welcome to my app. Please verify your account.',
+            html: `<h1>Welcome on my website<h1><a href="http://localhost:3000/api/users/verify/${verificationToken}">Verification link</a>`
+        };
+    
+        transporter.sendMail(mailOptions, (err, info) => {
+            if(err) {
+                console.log(err)
+                res.status(500).send('Could not send verification email')
+            } else {
+                console.log("Message sent: %s", info.messageId);
+                res.send('Email sent successfully');
+            }
+        });
+
+        return res.status(201).json({message: `User ${req.body.email} created. Subscription: starter. Please verify your account via email.`});
     } catch (err) {
         next(err)
     }
@@ -44,6 +77,10 @@ const loginUser = async (req, res) => {
     const user = await User.findOne({email});
     if (!user) {
         return res.status(401).json({message: 'Wrong email'});
+    }
+
+    if (!user.verify) {
+        return res.status(403).json({message: 'Email not verified'});
     }
 
     const isPasswordCorrect = await user.validatePassword(password);
@@ -122,15 +159,83 @@ const getCurrentUser = async (req, res, next) => {
             subscription: user.subscription,
             avatar: user.avatarURL
         })
-    }catch (err) {
+    } catch (err) {
         next(err)
     }
 };
+
+const verifyUser = async (req, res, next) => {
+    const {verificationToken} = req.params;
+
+    try {
+        const user = await User.findOne({verificationToken})
+        if(!user) {
+            return res.status(404).json({message: 'User not found'});
+        }
+        user.verificationToken = null;
+        user.verify = true;
+        await user.save();
+        return res.status(200).json({message: 'Verification successful'})
+    } catch (err) {
+        next(err)
+    }
+};
+
+const resendVerificationEmail = async (req, res, next) => {
+    const { email } = req.body;
+
+    if(!email) {
+        res.status(400).json({message: 'Wrong email'});
+    }
+
+    try {
+        const user = await User.findOne({email});
+        if(!user) {
+            return res.status(400).json({message: 'User not found'});
+        }
+
+        if(user.verify) {
+            return res.status(400).json({message: 'Verification has already been passed'});
+        }
+
+        const transporter = nodemailer.createTransport({
+            host: "smtp.mailgun.org",
+            port: 587,
+            secure: false,
+            auth: {
+              user: M_USER,
+              pass: M_PASS
+            },
+        });
+
+        const mailOptions = {
+            from: '"Company Team" <mycompany123@gmail.com>',
+            to: email,
+            subject: 'Resend Verification Email',
+            html: `<h1>Verification link</h1><a href="http://localhost:3000/api/users/verify/${user.verificationToken}">Click here to verify your account</a>`
+        };
+
+        transporter.sendMail(mailOptions, (err, info) => {
+            if(err) {
+                console.log(err)
+                res.status(500).send('Could not send verification email')
+            } else {
+                console.log("Message sent: %s", info.messageId);
+                res.send('Email sent successfully');
+            }
+        });
+        
+    } catch (err) {
+        next(err)
+    }
+}
 
 module.exports = {
     createUser,
     loginUser,
     logoutUser,
     getCurrentUser,
-    updateAvatar
+    updateAvatar,
+    verifyUser,
+    resendVerificationEmail
 };

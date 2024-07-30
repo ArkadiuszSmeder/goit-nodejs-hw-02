@@ -55,7 +55,7 @@ const createUser = async (req, res, next) => {
         transporter.sendMail(mailOptions, (err, info) => {
             if(err) {
                 console.log(err)
-                res.status(500).send('Error message')
+                res.status(500).send('Could not send verification email')
             } else {
                 console.log("Message sent: %s", info.messageId);
                 res.send('Email sent successfully');
@@ -182,11 +182,61 @@ const verifyUser = async (req, res, next) => {
     }
 };
 
+const resendVerificationEmail = async (req, res, next) => {
+    const { email } = req.body;
+
+    if(!email) {
+        res.status(400).json({message: 'Wrong email'});
+    }
+
+    try {
+        const user = await User.findOne({email});
+        if(!user) {
+            return res.status(400).json({message: 'User not found'});
+        }
+
+        if(user.verify) {
+            return res.status(400).json({message: 'Verification has already been passed'});
+        }
+
+        const transporter = nodemailer.createTransport({
+            host: "smtp.mailgun.org",
+            port: 587,
+            secure: false,
+            auth: {
+              user: M_USER,
+              pass: M_PASS
+            },
+        });
+
+        const mailOptions = {
+            from: '"Company Team" <mycompany123@gmail.com>',
+            to: email,
+            subject: 'Resend Verification Email',
+            html: `<h1>Verification link</h1><a href="http://localhost:3000/api/users/verify/${user.verificationToken}">Click here to verify your account</a>`
+        };
+
+        transporter.sendMail(mailOptions, (err, info) => {
+            if(err) {
+                console.log(err)
+                res.status(500).send('Could not send verification email')
+            } else {
+                console.log("Message sent: %s", info.messageId);
+                res.send('Email sent successfully');
+            }
+        });
+        
+    } catch (err) {
+        next(err)
+    }
+}
+
 module.exports = {
     createUser,
     loginUser,
     logoutUser,
     getCurrentUser,
     updateAvatar,
-    verifyUser
+    verifyUser,
+    resendVerificationEmail
 };

@@ -166,10 +166,9 @@ const getCurrentUser = async (req, res, next) => {
 
 const verifyUser = async (req, res, next) => {
     const {verificationToken} = req.params;
-    console.log(verificationToken)
+
     try {
         const user = await User.findOne({verificationToken})
-        console.log(user)
         if(!user) {
             return res.status(404).json({message: 'User not found'});
         }
